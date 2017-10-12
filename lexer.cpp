@@ -18,7 +18,6 @@ using std::make_pair;
 using std::pair;
 using std::unordered_map;
 
-int cont_sl=0;
 
 struct DFA
 {
@@ -81,7 +80,9 @@ void inicializaLexer(Lexer& lex)
 
 	//automata de identificadores
 	dfaAddTransition(lex.dfa_id,0,'l',1);
+	dfaAddTransition(lex.dfa_id,0,'e',1);
 	dfaAddTransition(lex.dfa_id,1,'l',1);
+	dfaAddTransition(lex.dfa_id,1,'e',1);
 	dfaAddTransition(lex.dfa_id,1,'n',1);
 	dfaAddFinalState(lex.dfa_id,1);
 
@@ -216,7 +217,10 @@ string dfaStart(DFA& dfa, std::ifstream& inputStream)
 
 	if(isalpha(symbol)|| symbol=='_')
 	{
-		symbol='l';
+		if(symbol!='e')
+		{
+			symbol='l';
+		}
 	}
 	if(isdigit(symbol))
 	{
@@ -235,7 +239,11 @@ string dfaStart(DFA& dfa, std::ifstream& inputStream)
 	    }
 	    else
 	    {
-		    return "No aceptado";
+		    if(currentState>0)
+		    {
+			    inputStream.putback(word.back());
+		    }
+		return "No aceptado";
 	    }
         }
 	else
@@ -256,7 +264,7 @@ void addSymbolTable(Lexer& lexer,Token token)
 }
 
 
-Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
+Token getNextToken(Lexer& lexer,std::ifstream& inputStream,int cont_sl)
 {
 	string cad;
 	Token token;
@@ -438,7 +446,6 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 		{
 			token.nombre="SalLin";
 			token.atributo=cad;
-			cont_sl=cont_sl+1;
 			return token;
 		}
 		//ejecuta el DFA de \t
@@ -470,13 +477,18 @@ int main()
 {
 	Lexer lexer;
 	Token tok;
+	int cont_sl=1;
 	inicializaLexer(lexer);
 	ifstream inputStream("programa.txt");
-	tok=getNextToken(lexer,inputStream);
+	tok=getNextToken(lexer,inputStream,cont_sl);
 	cout<< tok.nombre << " " << tok.atributo <<endl;
 	while(inputStream.good() && tok.nombre!="EOF")
 	{
-		tok=getNextToken(lexer,inputStream);
+		tok=getNextToken(lexer,inputStream,cont_sl);
+		if(tok.nombre=="SalLin")
+		{
+			cont_sl++;
+		}
 		cout<< tok.nombre << " " << tok.atributo <<endl;
 	}
 
