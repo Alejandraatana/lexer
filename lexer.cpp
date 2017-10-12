@@ -125,11 +125,7 @@ string dfaStart(DFA& dfa, std::ifstream& inputStream)
         if(dfa.transitionTable.count(transition) == 0)
         {
             // Backtrack
-	    if(symbol!=EOF)
-	    {
-		    inputStream.putback(symbol);
-	    }
-
+	    inputStream.putback(symbolAux);
             if(dfa.finalStates.count(currentState) > 0)
             {
 	       return word;
@@ -143,7 +139,6 @@ string dfaStart(DFA& dfa, std::ifstream& inputStream)
 	{
 		word=word+symbolAux;
 	}
-
         currentState = dfa.transitionTable[transition];
     }
 }
@@ -159,6 +154,8 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 	string cad;
 	int cont_sl=0;
 	Token token;
+	while(inputStream.good())
+	{
 		cad=dfaStart(lexer.dfa_id,inputStream);
 		if(cad!="No aceptado")
 		{
@@ -185,6 +182,8 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 			cout<< "Error en la linea n" <<endl;
 			exit(1);
 		}
+	}
+
 }
 
 
@@ -196,14 +195,19 @@ int main()
 	ifstream inputStream("programa.txt");
 	while(inputStream.good())
 	{
-		//tok=getNextToken(lexer,inputStream);
-		cout<< "a" <<endl;//tok.valor << " " << tok.token <<endl;
+		cout<< "a" <<endl;
+		/*tok=getNextToken(lexer,inputStream);
+		cout<< tok.nombre << " " << tok.atributo <<endl;
+		tok=getNextToken(lexer,inputStream);
+		cout<< tok.nombre << " " << tok.atributo <<endl;
+		tok=getNextToken(lexer,inputStream);
+		cout<< tok.nombre << " " << tok.atributo <<endl;*/
 	}
 
-	for(auto& i:lexer.symbolTable)
+	/*for(auto& i:lexer.symbolTable)
 	{
 		cout << i.first << "," << i.second.first << "," <<i.second.second  << endl;
-	}
+	}*/
 
 	inputStream.close();
 return 0;
