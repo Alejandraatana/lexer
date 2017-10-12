@@ -18,6 +18,8 @@ using std::make_pair;
 using std::pair;
 using std::unordered_map;
 
+int cont_sl=0;
+
 struct DFA
 {
     unsigned int startingState = {0};
@@ -141,18 +143,21 @@ string dfaStart(DFA& dfa, std::ifstream& inputStream)
 	}
         currentState = dfa.transitionTable[transition];
     }
+    return "";
 }
 
-void addSymbolTable()
+void addSymbolTable(Lexer& lexer,Token token)
 {
-
+	if(lexer.symbolTable.count(token.nombre)==0)
+	{
+		lexer.symbolTable.emplace(make_pair(token.nombre,make_pair(token.nombre,token.atributo)));
+	}
 }
 
 
 Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 {
 	string cad;
-	int cont_sl=0;
 	Token token;
 	while(inputStream.good())
 	{
@@ -161,6 +166,7 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 		{
 			token.nombre="ID";
 			token.atributo=cad;
+			addSymbolTable(lexer,token);
 			return token;
 		}
 		cad=dfaStart(lexer.dfa_puntocoma,inputStream);
@@ -174,13 +180,20 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream)
 		if(cad!="No aceptado")
 		{
 			token.nombre="SL";
-			token.atributo=cad;
+			token.atributo="sl";
+			cont_sl=cont_sl+1;
 			return token;
 		}
 		if(cad=="No aceptado")
 		{
-			cout<< "Error en la linea n" <<endl;
+			cout<< "Error en la linea" << " "<<cont_sl <<endl;
 			exit(1);
+		}
+		if(cad=="")
+		{
+			token.nombre="EOF";
+			token.atributo="";
+			return token;
 		}
 	}
 
@@ -193,22 +206,18 @@ int main()
 	Token tok;
 	inicializaLexer(lexer);
 	ifstream inputStream("programa.txt");
-	while(inputStream.good())
+	tok=getNextToken(lexer,inputStream);
+	while(inputStream.good() && tok.nombre!="EOF")
 	{
-		cout<< "a" <<endl;
-		/*tok=getNextToken(lexer,inputStream);
-		cout<< tok.nombre << " " << tok.atributo <<endl;
 		tok=getNextToken(lexer,inputStream);
 		cout<< tok.nombre << " " << tok.atributo <<endl;
-		tok=getNextToken(lexer,inputStream);
-		cout<< tok.nombre << " " << tok.atributo <<endl;*/
 	}
 
-	/*for(auto& i:lexer.symbolTable)
+	cout<<"***************************************************" <<endl;
+	for(auto& i:lexer.symbolTable)
 	{
 		cout << i.first << "," << i.second.first << "," <<i.second.second  << endl;
-	}*/
-
+	}
 	inputStream.close();
 return 0;
 }
