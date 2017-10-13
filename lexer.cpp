@@ -263,6 +263,18 @@ void addSymbolTable(Lexer& lexer,Token token)
 	}
 }
 
+bool esPalabraReservada(Lexer& lexer,string nombre)
+{
+	if(lexer.symbolTable.count(nombre)==0)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 
 Token getNextToken(Lexer& lexer,std::ifstream& inputStream,int cont_sl)
 {
@@ -274,16 +286,24 @@ Token getNextToken(Lexer& lexer,std::ifstream& inputStream,int cont_sl)
 		cad=dfaStart(lexer.dfa_id,inputStream);
 		if(cad!="No aceptado")
 		{
-			token.nombre="ID";
-			token.atributo=cad;
-			addSymbolTable(lexer,token);
+			if(esPalabraReservada(lexer,cad))
+			{
+				token.nombre=cad;
+				token.atributo="";
+			}
+			else
+			{
+				token.nombre="ID"+cad;
+				token.atributo=cad;
+				addSymbolTable(lexer,token);
+			}
 			return token;
 		}
 		//ejecuta el DFA de numeros
 		cad=dfaStart(lexer.dfa_num,inputStream);
 		if(cad!="No aceptado")
 		{
-			token.nombre="ConsNum";
+			token.nombre="ConsNum"+cad;
 			token.atributo=cad;
 			addSymbolTable(lexer,token);
 			return token;
@@ -480,6 +500,7 @@ int main()
 	int cont_sl=1;
 	inicializaLexer(lexer);
 	ifstream inputStream("programa.txt");
+	cout<<"Tokens generados:" <<endl;
 	tok=getNextToken(lexer,inputStream,cont_sl);
 	cout<< tok.nombre << " " << tok.atributo <<endl;
 	while(inputStream.good() && tok.nombre!="EOF")
@@ -491,12 +512,12 @@ int main()
 		}
 		cout<< tok.nombre << " " << tok.atributo <<endl;
 	}
-
-	/*cout<<"***************************************************" <<endl;
+	cout<<"***************************************************" <<endl;
+	cout<<"TABLA DE SIMBOLOS" <<endl;
 	for(auto& i:lexer.symbolTable)
 	{
 		cout << i.first << "," << i.second.first << "," <<i.second.second  << endl;
-	}*/
+	}
 	inputStream.close();
 return 0;
 }
